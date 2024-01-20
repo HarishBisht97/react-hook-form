@@ -59,86 +59,99 @@ const schema = yup.object().shape({
   }),
 });
 
-function App() {
-  const [personalDetails, setPersonalDetails] = useState("");
+const App = () => {
+  const [personalDetails, setPersonalDetails] = useState({});
+  const [setIndicator, setStepIndicator] = useState(true);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
-  } = useForm<IFormInputs>({
+  } = useForm<any>({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = (data: IFormInputs) => {
-    console.log(data);
     setPersonalDetails(data);
+    setStepIndicator(false);
   };
-  console.log("errors", errors);
+
+  const resetFields = () => {
+    reset();
+  };
 
   return (
     <div>
       <div className="registrationForm">
-        {!personalDetails && (
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <label>First Name</label>
-              <input {...register("name")} placeholder="John" />
-              {errors?.name && <p>{errors.name.message}</p>}
+        {setIndicator ? (
+          <form id="personal-details-form" onSubmit={handleSubmit(onSubmit)}>
+            <div className="formFields">
+              <div className="formField">
+                <label>Name</label>
+                <input {...register("name")} placeholder="John Doe" />
+                {errors?.name && <p>{errors.name.message as string}</p>}
+              </div>
+              <div className="formField">
+                <label>Age</label>
+                <input {...register("age")} placeholder="25" />
+                {errors?.age && <p>{errors.age.message as string}</p>}
+              </div>
+              <div className="formField">
+                <label>Sex</label>
+                <select {...register("sex", { required: true })}>
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                {errors?.sex && <p>{errors.sex.message as string}</p>}
+              </div>
+              <div className="formField">
+                <label>Mobile</label>
+                <input
+                  type="tel"
+                  placeholder="Mobile number"
+                  {...register("mobile")}
+                />
+                {errors?.mobile && <p>{errors.mobile.message as string}</p>}
+              </div>
+              <div className="formField">
+                <label>Govt Issued ID Type</label>
+                <select {...register("govtIdType")}>
+                  <option value="">Please select an option</option>
+                  <option value="Aadhar">Aadhar</option>
+                  <option value="PAN">PAN</option>
+                </select>
+                {errors?.govtIdType && (
+                  <p>{errors.govtIdType.message as string}</p>
+                )}
+              </div>
+              <div className="formField">
+                <label>Govt Issued Id</label>
+                <input
+                  {...register("govtId")}
+                  placeholder="4455 5555 0000 1111"
+                />
+                {errors?.govtId && <p>{errors.govtId.message as string}</p>}
+              </div>
             </div>
-            <div>
-              <label>Age</label>
-              <input {...register("age")} placeholder="25" />
-              {errors?.age && <p>{errors.age.message}</p>}
-            </div>
-            <div>
-              <label>Sex</label>
-              <select {...register("sex", { required: true })}>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-              {errors?.sex && <p>{errors.sex.message}</p>}
-            </div>
-            <div>
-              <label>Mobile</label>
-              <input
-                type="tel"
-                placeholder="Mobile number"
-                {...register("mobile", {
-                  required: true,
-                  minLength: 6,
-                  maxLength: 12,
-                })}
-              />
-              {errors?.mobile && <p>{errors.mobile.message}</p>}
-            </div>
-            <div>
-              <label>Govt Issued ID Type</label>
-              <select {...register("govtIdType")}>
-                <option value="">Please select an option</option>
-                <option value="Aadhar">Aadhar</option>
-                <option value="PAN">PAN</option>
-              </select>
-              {errors?.govtIdType && <p>{errors.govtIdType.message}</p>}
-            </div>
-            <div>
-              <label>Govt Issued Id</label>
-              <input
-                {...register("govtId")}
-                placeholder="4455 5555 0000 1111"
-              />
-              {errors?.govtId && <p>{errors.govtId.message}</p>}
-            </div>
-            <input type="submit" value="Next" />
+            <button className="submitButton" type="submit">
+              Next
+            </button>
           </form>
-        )}
-        {personalDetails && (
-          <AddressDetails personalDetails={personalDetails} />
+        ) : (
+          <AddressDetails
+            personalDetails={personalDetails}
+            resetFrom={setStepIndicator}
+            resetFields={resetFields}
+          />
         )}
       </div>
-      <UserTable />
+      <div className="userTable">
+        <UserTable />
+      </div>
     </div>
   );
-}
+};
 
 export default App;

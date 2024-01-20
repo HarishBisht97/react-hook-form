@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { v4 as uuidv4 } from "uuid";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useDebounce } from "../utils/debounce.ts";
 
 import { addUserDetails } from "../redux/registrationSlice.ts";
+import { COUNTRY_API_BASE_URL } from "../utils/constants.ts";
 
 interface AddressFormInputs {
   address: string;
@@ -24,13 +24,13 @@ const schema = yup.object().shape({
   pincode: yup.string().notRequired(),
 });
 
-const AddressDetails = ({ personalDetails }) => {
+const AddressDetails = ({ personalDetails, resetFrom, resetFields }) => {
   const [country, setCountry] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
   const dispatch = useDispatch();
 
-  const debouncedValue = useDebounce(country, 300); // Adjust the delay as needed
+  const debouncedValue = useDebounce(country, 300);
 
   useEffect(() => {
     if (debouncedValue.trim() !== "") {
@@ -42,9 +42,7 @@ const AddressDetails = ({ personalDetails }) => {
 
   const fetchCountrySuggestions = async (inputValue) => {
     try {
-      const response = await fetch(
-        `https://restcountries.com/v3.1/name/${inputValue}`
-      );
+      const response = await fetch(COUNTRY_API_BASE_URL + inputValue);
       const data = await response.json();
       const countrySuggestions = data.map((country) => country.name.common);
       countrySuggestions.length > 1 && setSuggestions(countrySuggestions);
@@ -61,7 +59,7 @@ const AddressDetails = ({ personalDetails }) => {
   const handleSuggestionClick = (suggestion) => {
     setValue("country", suggestion);
     setCountry(suggestion);
-    setSuggestions([]); // Clear suggestions after selection
+    setSuggestions([]);
   };
 
   const {
@@ -69,68 +67,76 @@ const AddressDetails = ({ personalDetails }) => {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useForm<AddressFormInputs>({
+  } = useForm<any>({
     resolver: yupResolver(schema),
   });
+
+  const users = useSelector((store: any) => store.user.users);
 
   const onSubmit = (addressDetails: AddressFormInputs) => {
     dispatch(
       addUserDetails({
-        id: uuidv4(),
+        id: users.length + 1,
         personalDetails,
         addressDetails,
       })
     );
+    resetFields();
+    resetFrom(true);
   };
-  console.log("errors", errors);
+
+  const RenderSuggestions = () => (
+    <ul className="scrollable-list">
+      {suggestions.map((suggestion, index) => (
+        <li key={index} onClick={() => handleSuggestionClick(suggestion)}>
+          {suggestion}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
-        <label>Address</label>
-        <input {...register("address")} placeholder="Enter address" />
-        {errors?.address && <p>{errors.address.message}</p>}
-      </div>
-      <div>
-        <label>State</label>
-        <input {...register("state")} placeholder="Enter state" />
-        {errors?.state && <p>{errors.state.message}</p>}
-      </div>
-      <div>
-        <label>City</label>
-        <input {...register("city")} placeholder="Enter city" />
-        {errors?.city && <p>{errors.city.message}</p>}
-      </div>
-      <div>
-        <label>Country</label>
-        <div style={{ position: "relative" }}>
-          <input
-            {...register("country")}
-            value={country}
-            onChange={handleChange}
-            placeholder="Enter country"
-          />
-          {suggestions.length && (
-            <ul className="scrollable-list">
-              {suggestions.map((suggestion, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                >
-                  {suggestion}
-                </li>
-              ))}
-            </ul>
-          )}
+      <div className="formFields">
+        <div className="formField">
+          <label>Address</label>
+          <input {...register("address")} placeholder="Enter address" />
+          {errors?.address && <p>{errors.address.message as string}</p>}
         </div>
-        {errors?.country && <p>{errors.country.message}</p>}
+        <div className="formField">
+          <label>State</label>
+          <input {...register("state")} placeholder="Enter state" />
+          {errors?.state && <p>{errors.state.message as string}</p>}
+        </div>
+        <div className="formField">
+          <label>City</label>
+          <input {...register("city")} placeholder="Enter city" />
+          {errors?.city && <p>{errors.city.message as string}</p>}
+        </div>
+        <div className="formField">
+          <label>Country</label>
+          <div style={{ position: "relative" }}>
+            <input
+              {...register("country")}
+              value={country}
+              onChange={handleChange}
+              placeholder="Enter country"
+            />
+            {suggestions.length > 0 && !suggestions.includes[country] && (
+              <RenderSuggestions />
+            )}
+          </div>
+          {errors?.country && <p>{errors.country?.message as string}</p>}
+        </div>
+        <div className="formField">
+          <label>Pincode</label>
+          <input {...register("pincode")} placeholder="Enter pincode" />
+          {errors?.pincode && <p>{errors.pincode.message as string}</p>}
+        </div>
       </div>
-      <div>
-        <label>Pincode</label>
-        <input {...register("pincode")} placeholder="Enter pincode" />
-        {errors?.pincode && <p>{errors.pincode.message}</p>}
-      </div>
-      <input type="submit" value="Submit" />
+      <button className="submitButton" type="submit">
+        Submit
+      </button>
     </form>
   );
 };

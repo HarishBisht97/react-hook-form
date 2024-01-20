@@ -9,7 +9,7 @@ const registrationSlice = createSlice({
   initialState,
   reducers: {
     addUserDetails: (state, action) => {
-      state.users = [...state.users, action.payload];
+      state.users = [...state.users, action.payload] as any;
     },
     resetRegistration: (state) => {
       state.users = initialState.users;

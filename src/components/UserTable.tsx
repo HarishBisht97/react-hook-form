@@ -1,7 +1,10 @@
-import "datatables.net-dt/css/jquery.dataTables.css";
-import ReactDataTables from "./ReactDataTables.tsx";
+import React from "react";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
+import ReactDataTables from "./ReactDataTables.tsx";
+
+import "datatables.net-dt/js/dataTables.dataTables";
+import "datatables.net-dt/css/jquery.dataTables.min.css";
 
 const columns = [
   { data: "name", title: "Name" },
@@ -24,6 +27,7 @@ const UserTable = () => {
     const formattedData = users?.map((user) => {
       return { id: user.id, ...user.personalDetails, ...user.addressDetails };
     });
+
     setUserData(formattedData);
   }, [users]);
 

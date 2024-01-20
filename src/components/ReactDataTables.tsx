@@ -1,3 +1,4 @@
+import React from "react";
 import DataTables, { Config } from "datatables.net-dt";
 import { useEffect, useRef } from "react";
 
@@ -9,9 +10,13 @@ export function ReactDataTables({ ...props }: Config) {
     return () => {
       dt.destroy();
     };
-  }, []);
+  }, [props]);
 
-  return <table ref={tableRef}></table>;
+  return (
+    <div className="abc">
+      <table ref={tableRef}></table>
+    </div>
+  );
 }
 
 export default ReactDataTables;
