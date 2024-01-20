@@ -2,22 +2,10 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import ReactDataTables from "./ReactDataTables.tsx";
+import { USER_COLUMNS } from "../utils/constants.ts";
 
 import "datatables.net-dt/js/dataTables.dataTables";
 import "datatables.net-dt/css/jquery.dataTables.min.css";
-
-const columns = [
-  { data: "name", title: "Name" },
-  { data: "age", title: "Age" },
-  { data: "sex", title: "Sex" },
-  { data: "govtIdType", title: "govtIdType" },
-  { data: "govtId", title: "govtId" },
-  { data: "address", title: "Address" },
-  { data: "state", title: "state" },
-  { data: "city", title: "City" },
-  { data: "country", title: "Country" },
-  { data: "pincode", title: "Pincode" },
-];
 
 const UserTable = () => {
   const [userData, setUserData] = useState([]);
@@ -31,7 +19,7 @@ const UserTable = () => {
     setUserData(formattedData);
   }, [users]);
 
-  return <ReactDataTables data={userData} columns={columns} />;
+  return <ReactDataTables data={userData} columns={USER_COLUMNS} />;
 };
 
 export default UserTable;

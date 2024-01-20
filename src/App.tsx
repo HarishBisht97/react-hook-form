@@ -5,8 +5,10 @@ import AddressDetails from "./components/AddressDetails.tsx";
 import UserTable from "./components/UserTable.tsx";
 import * as yup from "yup";
 import "./index.css";
+import { isValidIndianMobile } from "./utils/utilFunctions.ts";
+import { AADHAR, PAN } from "./utils/constants.ts";
 
-interface IFormInputs {
+interface PersonalDetailsFormInputs {
   name: string;
   age: string;
   sex: string;
@@ -14,11 +16,6 @@ interface IFormInputs {
   govtIdType: string;
   govtId: string;
 }
-
-const isValidIndianMobile = (value: any) => {
-  const regex = /^[6-9]\d{9}$/; // Indian mobile numbers start with 6, 7, 8, or 9 and are 10 digits long
-  return !value || regex.test(value);
-};
 
 const schema = yup.object().shape({
   name: yup
@@ -38,20 +35,22 @@ const schema = yup.object().shape({
   govtId: yup.string().test("govtIdValidation", "", (value, context) => {
     if (!value) return true;
     const govtIdType = context.parent.govtIdType;
+    let validationMessage: string;
+    let isValid: boolean;
 
-    const validationMessage =
-      govtIdType === "Aadhar"
-        ? "Invalid Aadhar number"
-        : govtIdType === "PAN"
-        ? "Invalid PAN number"
-        : "Invalid govtId";
-
-    const isValid =
-      govtIdType === "Aadhar"
-        ? /^[2-9]\d{11}$/.test(value)
-        : govtIdType === "PAN"
-        ? /^[a-zA-Z0-9]{10}$/.test(value)
-        : true;
+    switch (govtIdType) {
+      case AADHAR:
+        validationMessage = "Invalid Aadhar number";
+        isValid = /^[2-9]\d{11}$/.test(value);
+        break;
+      case PAN:
+        validationMessage = "Invalid PAN number";
+        isValid = /^[a-zA-Z0-9]{10}$/.test(value);
+        break;
+      default:
+        validationMessage = "Invalid govtId";
+        isValid = true;
+    }
 
     if (!isValid) return context.createError({ message: validationMessage });
 
@@ -72,7 +71,7 @@ const App = () => {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = (data: IFormInputs) => {
+  const onSubmit = (data: PersonalDetailsFormInputs) => {
     setPersonalDetails(data);
     setStepIndicator(false);
   };
